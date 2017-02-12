@@ -26,6 +26,20 @@ AVGINTERVAL = 60  # Interval for averaging of readings
 MEANOUTFILE = 'meantemps.out'
 RAWOUTFILE = 'rawtemps.out'
 
+def read_temp():
+    sensor_data = readadc.readadc(TMPPIN,
+                                  readadc.PINS.SPICLK,
+                                  readadc.PINS.SPIMOSI,
+                                  readadc.PINS.SPIMISO,
+                                  readadc.PINS.SPICS)
+
+    millivolts = sensor_data * (3300.0 / 1024.0)
+    # 10 mv per degree
+    tempC = ((millivolts - 100.0) / 10.0) - 40.0
+    # convert celsius to fahrenheit
+    tempF = (tempC * 9.0 / 5.0) + 32
+    return tempF
+
 ##with open('./config.json') as config_file:
 ##    plotlyuserconf = json.load(config_file)
 ##
@@ -49,17 +63,8 @@ failmsgsent = False
 stuckmsgsent = False
 while True:
     cnt += 1
-    sensor_data = readadc.readadc(TMPPIN,
-                                  readadc.PINS.SPICLK,
-                                  readadc.PINS.SPIMOSI,
-                                  readadc.PINS.SPIMISO,
-                                  readadc.PINS.SPICS)
 
-    millivolts = sensor_data * (3300.0 / 1024.0)
-    # 10 mv per degree
-    tempC = ((millivolts - 100.0) / 10.0) - 40.0
-    # convert celsius to fahrenheit
-    tempF = (tempC * 9.0 / 5.0) + 32
+    tempF = read_temp()
     temps.append(tempF)
 
     curtime = datetime.datetime.now().isoformat().split('.')[0]
