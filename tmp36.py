@@ -65,11 +65,11 @@ while True:
     curtime = datetime.datetime.now().isoformat().split('.')[0]
     rawoutfh.write('{} {:.2f}\n'.format(curtime, tempF))
 
-    # Calculate average and write the data to plotly
     if cnt % AVGINTERVAL != 0:
         print 'secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
               .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light)
     else:
+        # Calculate average and write the data to plotly
         print 'Here!'
         meantemp = np.mean(sorted(temps)[3:-3])
         #meantempdata.append([curtime, meantemp])
