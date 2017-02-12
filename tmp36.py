@@ -109,7 +109,7 @@ while True:
                 failmsgsent = False  # Reset
                 time.sleep(4.0)  # Give the light time to dim
 
-        # Check to make sure the light is really on if it's supposed to be
+        # Check to make sure the light is really on when it's supposed to be
         if readadc.powerswitch_is_on() and its_dark():
             if failmsgsent is False:
                 subj, msg = ('*** Bulb failure? ***',
@@ -118,7 +118,7 @@ while True:
                 msgqueue.append((subj, msg, True))  # text
             failmsgsent = True
 
-        # Check to make sure the light is really off if it's supposed to be
+        # Check to make sure the light is really off when it's supposed to be
         if readadc.powerswitch_is_off() and its_light():
             if stuckmsgsent is False:
                 subj, msg = ('*** Switch stuck? ***',
