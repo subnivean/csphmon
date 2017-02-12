@@ -1,0 +1,5 @@
+*.swp
+*.pyc
+rawtemps.out
+meantemps.out
+foo.jpg
