@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-
 import json
 import requests
-from requests.auth import HTTPBasicAuth
+#from requests.auth import HTTPBasicAuth
 import time
 import datetime
 import numpy as np
@@ -10,61 +9,46 @@ import numpy as np
 import readadc
 import mailsend
 from powerswitch import Powerswitch
-
-PSPIN = 22  # Powerswitch pin
-
-# Set up light sensor
-import RPi.GPIO as io
-io.setmode(io.BCM)
-ldrpin = 17
-io.setup(ldrpin, io.IN)
+from lightsensor import Lightsensor
 
 # All temps in degrees F
 MINTEMP = 38.0
 MAXTEMP = 42.0
 ALERTTEMP = 37.0
 
-with open('./config.json') as config_file:
-    plotlyuserconf = json.load(config_file)
-
-headers = {'Plotly-Client-Platform': 'python'}
-auth = HTTPBasicAuth(plotlyuserconf['plotly_username'],
-                     plotlyuserconf['plotly_api_key'])
-
 # temperature sensor middle pin connected channel 0 of mcp3008
-sensor_pin = 0
-readadc.initialize()
+TMPPIN = 0
+PSPIN = 22  # Powerswitch pin
+LDRPIN = 17  # Light sensor pin
 
-ps = Powerswitch(PSPIN)
+AVGINTERVAL = 60  # Interval for averaging of readings
+MEANOUTFILE = 'meantemps.out'
+RAWOUTFILE = 'rawtemps.out'
 
+##with open('./config.json') as config_file:
+##    plotlyuserconf = json.load(config_file)
+##
+##headers = {'Plotly-Client-Platform': 'python'}
+##auth = HTTPBasicAuth(plotlyuserconf['plotly_username'],
+##                     plotlyuserconf['plotly_api_key'])
 #mailsend.send('Starting tmp36.py', 'Starting now..')
+
+readadc.initialize()
+ps = Powerswitch(PSPIN)
+ldr = Lightsensor(LDRPIN)
+
+rawoutfh = open(RAWOUTFILE, 'a')
+meanoutfh = open(MEANOUTFILE, 'a', 0)
 
 cnt = 0
 temps = []
 meantempdata = []
-
-AVGINTERVAL = 60  # Interval for averaging of readings
-
-meanoutfile = 'meantemps.out'
-rawoutfile = 'rawtemps.out'
-respoutfile = 'response.out'
-
-rawoutfh = open(rawoutfile, 'a')
-meanoutfh = open(meanoutfile, 'a', 0)
-
 msgqueue = []
 failmsgsent = False
 stuckmsgsent = False
-
-def its_dark():
-    return not io.input(ldrpin)
-
-def its_light():
-    return not its_dark()
-
 while True:
     cnt += 1
-    sensor_data = readadc.readadc(sensor_pin,
+    sensor_data = readadc.readadc(TMPPIN,
                                   readadc.PINS.SPICLK,
                                   readadc.PINS.SPIMOSI,
                                   readadc.PINS.SPIMISO,
@@ -83,7 +67,7 @@ while True:
     # Calculate average and write the data to plotly
     if cnt % AVGINTERVAL != 0:
         print 'secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
-              .format(60 - cnt % 60, cnt, tempF, ps.is_on, io.input(ldrpin))
+              .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light)
     else:
         print 'Here!'
         meantemp = np.mean(sorted(temps)[3:-3])
@@ -115,7 +99,7 @@ while True:
                 time.sleep(4.0)  # Give the light time to dim
 
         # Check to make sure the light is really on when it's supposed to be
-        if ps.is_on and its_dark():
+        if ps.is_on and ldr.dark:
             if failmsgsent is False:
                 subj, msg = ('*** Bulb failure? ***',
                              "The powerswitch is on but it's dark down here!")
@@ -124,7 +108,7 @@ while True:
             failmsgsent = True
 
         # Check to make sure the light is really off when it's supposed to be
-        if ps.is_off and its_light():
+        if ps.is_off and ldr.light:
             if stuckmsgsent is False:
                 subj, msg = ('*** Switch stuck? ***',
                              "The powerswitch is off but it's light down here!")
@@ -167,5 +151,5 @@ while True:
         #    except:
         #        print 'Request failed...'
 
-    # delay between stream posts
+    # delay between readings
     time.sleep(1.0)
