@@ -16,9 +16,10 @@ io.setmode(io.BCM)
 ldrpin = 17
 io.setup(ldrpin, io.IN)
 
-MINTEMP = 38.0  # degrees F
-MAXTEMP = 42.0  # degrees F
-ALERTTEMP = 37.0  # degrees F
+# All temps in degrees F
+MINTEMP = 38.0
+MAXTEMP = 42.0
+ALERTTEMP = 37.0
 
 with open('./config.json') as config_file:
     plotlyuserconf = json.load(config_file)
