@@ -34,12 +34,11 @@ readadc.initialize()
 
 #mailsend.send('Starting tmp36.py', 'Starting now..')
 
-#the main sensor reading and plotting loop
 cnt = 0
 temps = []
 meantempdata = []
 
-AVGINTERVAL = 60  # Interval for averaging of 1/sec readings
+AVGINTERVAL = 60  # Interval for averaging of readings
 
 meanoutfile = 'meantemps.out'
 rawoutfile = 'rawtemps.out'
