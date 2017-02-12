@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 import json
-import requests
+#import requests
 #from requests.auth import HTTPBasicAuth
 import time
 import datetime
 import numpy as np
 
-import readadc
+# Current directory
+from lightsensor import Lightsensor
 import mailsend
 from powerswitch import Powerswitch
-from lightsensor import Lightsensor
+import readadc
 
 # All temps in degrees F
 MINTEMP = 38.0
