@@ -8,7 +8,6 @@ class PINS:
     SPIMISO = 23
     SPIMOSI = 24
     SPICS = 25
-    PSON = 22
 
  # set up the SPI interface pins
 def initialize():
@@ -18,8 +17,6 @@ def initialize():
     GPIO.setup(PINS.SPIMISO, GPIO.IN)
     GPIO.setup(PINS.SPICLK, GPIO.OUT)
     GPIO.setup(PINS.SPICS, GPIO.OUT)
-    GPIO.setup(PINS.PSON, GPIO.OUT)
-    GPIO.output(PINS.PSON, False)
 
 # Function to read data from Analog Pin 0 from MCP3008 (don't need to edit)
 # This function will be called in our loop to get the current sensor value
@@ -56,15 +53,3 @@ def readadc(adcnum, clockpin, mosipin, misopin, cspin):
 
     adcout /= 2       # first bit is 'null' so drop it
     return adcout
-
-def powerswitch_on():
-    GPIO.output(PINS.PSON, True)
-
-def powerswitch_off():
-    GPIO.output(PINS.PSON, False)
-
-def powerswitch_is_on():
-    return GPIO.input(PINS.PSON)
-
-def powerswitch_is_off():
-    return not powerswitch_is_on()

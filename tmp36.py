@@ -9,6 +9,9 @@ import numpy as np
 
 import readadc
 import mailsend
+from powerswitch import Powerswitch
+
+PSPIN = 22  # Powerswitch pin
 
 # Set up light sensor
 import RPi.GPIO as io
@@ -31,6 +34,8 @@ auth = HTTPBasicAuth(plotlyuserconf['plotly_username'],
 # temperature sensor middle pin connected channel 0 of mcp3008
 sensor_pin = 0
 readadc.initialize()
+
+ps = Powerswitch(PSPIN)
 
 #mailsend.send('Starting tmp36.py', 'Starting now..')
 
@@ -78,7 +83,7 @@ while True:
     # Calculate average and write the data to plotly
     if cnt % AVGINTERVAL != 0:
         print 'secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
-              .format(60 - cnt % 60, cnt, tempF, readadc.powerswitch_is_on(), io.input(ldrpin))
+              .format(60 - cnt % 60, cnt, tempF, ps.is_on, io.input(ldrpin))
     else:
         print 'Here!'
         meantemp = np.mean(sorted(temps)[3:-3])
@@ -89,28 +94,28 @@ while True:
         temps = []
 
         if meantemp < ALERTTEMP:
-            if readadc.powerswitch_is_on():
+            if ps.is_on:
                 msgqueue.append(('*** Bulb problem? ***',
                                  'Temp dropped below {}!'.format(ALERTTEMP, False)))
-                readadc.powerswitch_on()
+                ps.on()
                 time.sleep(1.0)  # Give the light time to come on
         elif meantemp < MINTEMP:
-            if readadc.powerswitch_is_off():
+            if ps.is_off:
                 msgqueue.append(('Turning on the light',
                                  'Temp dropped below {}'.format(MINTEMP), False))
-                readadc.powerswitch_on()
+                ps.on()
                 stuckmsgsent = False  # Reset
                 time.sleep(1.0)  # Give the light time to come on
         elif meantemp > MAXTEMP:
-            if readadc.powerswitch_is_on():
+            if ps.is_on:
                 msgqueue.append(('Turning off the light',
                                  'Temp above {}'.format(MAXTEMP), False))
-                readadc.powerswitch_off()
+                ps.off()
                 failmsgsent = False  # Reset
                 time.sleep(4.0)  # Give the light time to dim
 
         # Check to make sure the light is really on when it's supposed to be
-        if readadc.powerswitch_is_on() and its_dark():
+        if ps.is_on and its_dark():
             if failmsgsent is False:
                 subj, msg = ('*** Bulb failure? ***',
                              "The powerswitch is on but it's dark down here!")
@@ -119,7 +124,7 @@ while True:
             failmsgsent = True
 
         # Check to make sure the light is really off when it's supposed to be
-        if readadc.powerswitch_is_off() and its_light():
+        if ps.is_off and its_light():
             if stuckmsgsent is False:
                 subj, msg = ('*** Switch stuck? ***',
                              "The powerswitch is off but it's light down here!")

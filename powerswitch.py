@@ -1,24 +1,22 @@
-import time
-import RPi.GPIO as io
+import RPi.GPIO as GPIO
 
-io.setmode(io.BCM)
+class Powerswitch(object):
+    def __init__(self, pin):
+        self.pin = pin
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(self.pin, GPIO.OUT)
+        GPIO.output(self.pin, False)
 
-ldrpin = 17
-powerpin = 22
-
-io.setup(powerpin, io.OUT)
-io.setup(ldrpin, io.IN)
-
-io.output(powerpin, False)
-
-io.output(powerpin, True)
-
-#while True:
-while False:
-    if not io.input(ldrpin):
-        print("POWER ON")
-        io.output(powerpin, True)
-    else:
-        print("POWER OFF")
-        io.output(powerpin, False)
-    time.sleep(2.0)
+    def on(self):
+        GPIO.output(self.pin, True)
+    
+    def off(self):
+        GPIO.output(self.pin, False)
+    
+    @property
+    def is_on(self):
+        return bool(GPIO.input(self.pin))
+    
+    @property
+    def is_off(self):
+        return not self.is_on
