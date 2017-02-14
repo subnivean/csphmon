@@ -128,8 +128,10 @@ while True:
             
             try:
                 mailsend.send(subj, msg, alert=alert)
+                print 'Mail sent!'
                 msgqueue.pop(0)
             except:
+                print 'Mail not sent!'
                 pass
 
         #if cnt % (15 * AVGINTERVAL) == 0:

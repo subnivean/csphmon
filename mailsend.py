@@ -1,12 +1,13 @@
 #!/usr/bin/python
 import smtplib
+import secrets
 
 SMTP_SERVER = 'smtp.gmail.com'
 SMTP_PORT = 587
-GMAIL_USERNAME = 'mark.krautheim@gmail.com'
-GMAIL_PASSWORD = 'joyxoadmsnfevxri' #CAUTION: This is stored in plain text!
-VTEXTADDR = '8029891055@vtext.com'
-EMAILADDR='mark.krautheim@gmail.com'
+GMAIL_USERNAME = secrets.gmail_username
+GMAIL_PASSWORD = secrets.gmail_password
+VTEXTADDR = secrets.vtextaddr
+EMAILADDR = secrets.emailaddr
 
 def send(subject, emailtext, alert=False):
     
@@ -26,7 +27,6 @@ def send(subject, emailtext, alert=False):
     
     session.ehlo()
     session.starttls()
-    session.ehlo
     
     session.login(GMAIL_USERNAME, GMAIL_PASSWORD)
     
