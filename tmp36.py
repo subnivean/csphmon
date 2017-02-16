@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import json
 #import requests
 #from requests.auth import HTTPBasicAuth
@@ -53,7 +53,7 @@ ps = Powerswitch(PSPIN)
 ldr = Lightsensor(LDRPIN)
 
 rawoutfh = open(RAWOUTFILE, 'a')
-meanoutfh = open(MEANOUTFILE, 'a', 0)
+meanoutfh = open(MEANOUTFILE, 'ab', 0)
 
 cnt = 0
 temps = []
@@ -71,15 +71,16 @@ while True:
     rawoutfh.write('{} {:.2f}\n'.format(curtime, tempF))
 
     if cnt % AVGINTERVAL != 0:
-        print 'secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
-              .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light)
+        print('secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
+              .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light))
     else:
         # Calculate average and write the data to plotly
-        print 'Here!'
+        print('Here!')
         meantemp = np.mean(sorted(temps)[3:-3])
         #meantempdata.append([curtime, meantemp])
 
-        meanoutfh.write('{} {:.2f}\n'.format(curtime, meantemp))
+        dline = bytes('{} {:.2f}\n'.format(curtime, meantemp), 'UTF-8')
+        meanoutfh.write(dline)
 
         temps = []
 
@@ -128,36 +129,35 @@ while True:
             
             try:
                 mailsend.send(subj, msg, alert=alert)
-                print 'Mail sent!'
+                print('Mail sent!')
                 msgqueue.pop(0)
             except:
-                print 'Mail not sent!'
+                print('Mail not sent!')
                 pass
 
         #if cnt % (15 * AVGINTERVAL) == 0:
         #if cnt % (1 * AVGINTERVAL) == 0:
-        #    print 'Here2!'
         #    rowdata = []
         #    for ctime, mtemp in meantempdata:
         #        rowdata.append([ctime, mtemp])
 
         #    rows = {"rows": rowdata}
-        #    print 'rows', rows
+        #    print('rows', rows)
         #        
         #    try:
         #        r = requests.post('https://api.plot.ly/v2/grids/subnivean:21/row',
         #                           auth=auth, headers=headers, json=rows)
-        #        print 'response:', r.__dict__
+        #        print('response:', r.__dict__)
         #        if r.status_code != 429:
-        #            print 'Data uploaded (?)'
+        #            print('Data uploaded (?)')
         #            meantempdata = []
         #        else:
-        #            print 'Too many requests!'
+        #            print('Too many requests!')
 
         #        #meanoutfh.write('{}\n\n'.format(str(r)))
 
         #    except:
-        #        print 'Request failed...'
+        #        print('Request failed...')
 
     # delay between readings
     time.sleep(1.0)
