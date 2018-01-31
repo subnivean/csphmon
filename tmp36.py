@@ -13,9 +13,13 @@ from powerswitch import Powerswitch
 import readadc
 
 # All temps in degrees F
-MINTEMP = 38.0
+#MINTEMP = 38.0
+#MAXTEMP = 42.0
+#ALERTTEMP = 37.0
+
+MINTEMP = 39.5
 MAXTEMP = 42.0
-ALERTTEMP = 37.0
+ALERTTEMP = 38.0
 
 # temperature sensor middle pin connected channel 0 of mcp3008
 TMPPIN = 0
