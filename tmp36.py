@@ -91,7 +91,7 @@ while True:
         if meantemp < ALERTTEMP:
             if ps.is_on:
                 msgqueue.append(('*** Bulb problem? ***',
-                                 'Temp dropped below {}!'.format(ALERTTEMP, False)))
+                                 'Temp dropped below {}!'.format(ALERTTEMP), False))
                 ps.on()
                 time.sleep(1.0)  # Give the light time to come on
         elif meantemp < MINTEMP:
