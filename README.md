@@ -1,6 +1,8 @@
 # csphmon
 Crawl Space Pump House Monitoring and Control
 
+Running on an RPi3 Model B with Raspbian OS
+
 Clone into `/home/pi/pythaw`.
 
 Note that you must copy `secrets_example.py` to `secrets.py` and modify
