@@ -131,10 +131,11 @@ while True:
         while len(msgqueue) > 0:
             subj, msg, alert = msgqueue[0]
             
+            msgqueue.pop(0)
             try:
                 mailsend.send(subj, msg, alert=alert)
                 print('Mail sent!')
-                msgqueue.pop(0)
+                # msgqueue.pop(0)
             except:
                 print('Mail not sent!')
                 pass
