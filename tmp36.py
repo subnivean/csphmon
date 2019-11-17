@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 
 # Current directory
-from lightsensor import Lightsensor
+# from lightsensor import Lightsensor
 import mailsend
 from powerswitch import Powerswitch
 import readadc
@@ -19,6 +19,10 @@ import readadc
 
 MINTEMP = 39.5
 MAXTEMP = 42.0
+ALERTTEMP = 38.0
+
+MINTEMP = 45.9
+MAXTEMP = 47.0
 ALERTTEMP = 38.0
 
 # temperature sensor middle pin connected channel 0 of mcp3008
@@ -54,7 +58,7 @@ def read_temp():
 
 readadc.initialize()
 ps = Powerswitch(PSPIN)
-ldr = Lightsensor(LDRPIN)
+# ldr = Lightsensor(LDRPIN)
 
 rawoutfh = open(RAWOUTFILE, 'a')
 meanoutfh = open(MEANOUTFILE, 'ab', 0)
@@ -63,8 +67,8 @@ cnt = 0
 temps = []
 meantempdata = []
 msgqueue = []
-failmsgsent = False
-stuckmsgsent = False
+# failmsgsent = False
+# stuckmsgsent = False
 while True:
     cnt += 1
 
@@ -75,8 +79,10 @@ while True:
     rawoutfh.write('{} {:.2f}\n'.format(curtime, tempF))
 
     if cnt % AVGINTERVAL != 0:
-        print('secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
-              .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light))
+        # print('secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
+        #       .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light))
+        print('secs={:2d} cnt={} temp={:.2f} switch:{}'\
+              .format(60 - cnt % 60, cnt, tempF, ps.is_on))
     else:
         # Calculate average and write the data to plotly
         print('Here!')
@@ -90,42 +96,42 @@ while True:
 
         if meantemp < ALERTTEMP:
             if ps.is_on:
-                msgqueue.append(('*** Bulb problem? ***',
+                msgqueue.append(('*** Heater problem? ***',
                                  'Temp dropped below {}!'.format(ALERTTEMP), False))
-                ps.on()
-                time.sleep(1.0)  # Give the light time to come on
+                ps.on()  # Try again
+                ## time.sleep(1.0)  # Give the light time to come on
         elif meantemp < MINTEMP:
             if ps.is_off:
-                msgqueue.append(('Turning on the light',
+                msgqueue.append(('Turning on the heater',
                                  'Temp dropped below {}'.format(MINTEMP), False))
                 ps.on()
-                stuckmsgsent = False  # Reset
-                time.sleep(1.0)  # Give the light time to come on
+                # stuckmsgsent = False  # Reset
+                ## time.sleep(1.0)  # Give the light time to come on
         elif meantemp > MAXTEMP:
             if ps.is_on:
-                msgqueue.append(('Turning off the light',
+                msgqueue.append(('Turning off the heater',
                                  'Temp above {}'.format(MAXTEMP), False))
                 ps.off()
-                failmsgsent = False  # Reset
-                time.sleep(4.0)  # Give the light time to dim
+                # failmsgsent = False  # Reset
+                ## time.sleep(4.0)  # Give the light time to dim
 
-        # Check to make sure the light is really on when it's supposed to be
-        if ps.is_on and ldr.dark:
-            if failmsgsent is False:
-                subj, msg = ('*** Bulb failure? ***',
-                             "The powerswitch is on but it's dark down here!")
-                msgqueue.append((subj, msg, False))  # email
-                msgqueue.append((subj, msg, True))  # text
-            failmsgsent = True
+        ## # Check to make sure the light is really on when it's supposed to be
+        ## if ps.is_on and ldr.dark:
+        ##     if failmsgsent is False:
+        ##         subj, msg = ('*** Bulb failure? ***',
+        ##                      "The powerswitch is on but it's dark down here!")
+        ##         msgqueue.append((subj, msg, False))  # email
+        ##         msgqueue.append((subj, msg, True))  # text
+        ##     failmsgsent = True
 
-        # Check to make sure the light is really off when it's supposed to be
-        if ps.is_off and ldr.light:
-            if stuckmsgsent is False:
-                subj, msg = ('*** Switch stuck? ***',
-                             "The powerswitch is off but it's light down here!")
-                msgqueue.append((subj, msg, False))  # email
-                msgqueue.append((subj, msg, True))  # text
-            stuckmsgsent = True
+        ## # Check to make sure the light is really off when it's supposed to be
+        ## if ps.is_off and ldr.light:
+        ##     if stuckmsgsent is False:
+        ##         subj, msg = ('*** Switch stuck? ***',
+        ##                      "The powerswitch is off but it's light down here!")
+        ##         msgqueue.append((subj, msg, False))  # email
+        ##         msgqueue.append((subj, msg, True))  # text
+        ##     stuckmsgsent = True
 
         # Send any queued messages
         while len(msgqueue) > 0:
