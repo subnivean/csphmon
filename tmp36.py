@@ -21,10 +21,6 @@ MINTEMP = 39.5
 MAXTEMP = 42.0
 ALERTTEMP = 38.0
 
-MINTEMP = 45.9
-MAXTEMP = 47.0
-ALERTTEMP = 38.0
-
 # temperature sensor middle pin connected channel 0 of mcp3008
 TMPPIN = 0
 PSPIN = 22  # Powerswitch pin
