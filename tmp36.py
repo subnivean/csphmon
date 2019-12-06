@@ -82,7 +82,8 @@ while True:
     else:
         # Calculate average and write the data to plotly
         print('Here!')
-        meantemp = np.mean(sorted(temps)[3:-3])
+        meantemp = np.median(temps)
+        # meantemp = np.mean(sorted(temps)[3:-3])
         #meantempdata.append([curtime, meantemp])
 
         dline = bytes('{} {:.2f}\n'.format(curtime, meantemp), 'UTF-8')
