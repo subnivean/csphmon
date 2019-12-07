@@ -67,6 +67,7 @@ msgqueue = []
 # stuckmsgsent = False
 lastmeantemp = None
 tdir = u"\u2198"
+minsincelastchg = 0
 while True:
     cnt += 1
 
@@ -88,16 +89,23 @@ while True:
         if lastmeantemp is not None:
             if meantemp - lastmeantemp > 0:
                 tdir = u"\u2197"
+                minsincelastchg = 0
             elif meantemp - lastmeantemp < 0:
                 tdir = u"\u2198"
+                minsincelastchg = 0
 
         meantemp = np.median(temps)
         lastmeantemp = meantemp
         # meantemp = np.mean(sorted(temps)[3:-3])
         #meantempdata.append([curtime, meantemp])
 
-        dline = bytes('{} {:.2f} {}\n'.format(curtime, meantemp, tdir), 'UTF-8')
+        dline = bytes('{} {:.2f} {} ({})\n'
+                      .format(curtime, meantemp,
+                              tdir, minsincelastchg),
+                      'UTF-8')
         meanoutfh.write(dline)
+
+        minsincelastchg += 1
 
         temps = []
 
