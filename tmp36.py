@@ -66,7 +66,7 @@ msgqueue = []
 # failmsgsent = False
 # stuckmsgsent = False
 lastmeantemp = None
-tdir = u"\u2193"
+tdir = u"\u2198"
 while True:
     cnt += 1
 
@@ -87,9 +87,9 @@ while True:
 
         if lastmeantemp is not None:
             if meantemp - lastmeantemp > 0:
-                tdir = u"\u2191"
+                tdir = u"\u2197"
             elif meantemp - lastmeantemp < 0:
-                tdir = u"\u2193"
+                tdir = u"\u2198"
 
         meantemp = np.median(temps)
         lastmeantemp = meantemp
