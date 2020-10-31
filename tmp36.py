@@ -17,9 +17,9 @@ import readadc
 #MAXTEMP = 42.0
 #ALERTTEMP = 37.0
 
-MINTEMP = 39.5
+MINTEMP = 37.5
 MAXTEMP = 42.0
-ALERTTEMP = 38.0
+ALERTTEMP = 36.5
 
 # temperature sensor middle pin connected channel 0 of mcp3008
 TMPPIN = 0
@@ -68,6 +68,7 @@ msgqueue = []
 lastmeantemp = None
 tdir = u"\u2198"
 minsincelastchg = 0
+last30 = []
 while True:
     cnt += 1
 
@@ -86,6 +87,15 @@ while True:
         # Calculate average and write the data to plotly
         print('Here!')
 
+        meantemp = np.median(temps)
+
+        last30.append(meantemp)
+        if len(last30) > 30:
+            last30.pop(0)
+
+        rmean10ndx = min(len(last30), 10)
+        rmean10 = np.mean(last30[-rmean10ndx:])
+
         if lastmeantemp is not None:
             if meantemp - lastmeantemp > 0:
                 tdir = u"\u2197"
@@ -94,14 +104,13 @@ while True:
                 tdir = u"\u2198"
                 minsincelastchg = 0
 
-        meantemp = np.median(temps)
         lastmeantemp = meantemp
         # meantemp = np.mean(sorted(temps)[3:-3])
         #meantempdata.append([curtime, meantemp])
 
-        dline = bytes('{} {:.2f} {} ({})\n'
+        dline = bytes('{} {:.2f} {} ({}) {:.2f}\n'
                       .format(curtime, meantemp,
-                              tdir, minsincelastchg),
+                              tdir, minsincelastchg, rmean10),
                       'UTF-8')
         meanoutfh.write(dline)
 
