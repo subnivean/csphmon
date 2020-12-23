@@ -87,7 +87,7 @@ while True:
 
         minsincelastchg += 1
 
-        temps = []
+        temps = []  # Reset
 
         if meantemp < ALERTTEMP:
             if ps.is_on:
@@ -107,15 +107,12 @@ while True:
 
         # Send any queued messages
         while len(msgqueue) > 0:
-            subj, msg, alert = msgqueue[0]
-            
-            msgqueue.pop(0)
+            subj, msg, alert = msgqueue.pop(0)
             try:
                 mailsend.send(subj, msg, alert=alert)
                 print("Mail sent!")
             except:
                 print("Mail not sent!")
-                pass
 
     # delay between readings
     time.sleep(1.0)
