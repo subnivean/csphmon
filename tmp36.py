@@ -1,22 +1,15 @@
 #!/usr/bin/env python3.6
 import json
-#import requests
-#from requests.auth import HTTPBasicAuth
 import time
 import datetime
 import numpy as np
 
 # Current directory
-# from lightsensor import Lightsensor
 import mailsend
 from powerswitch import Powerswitch
 import readadc
 
 # All temps in degrees F
-#MINTEMP = 38.0
-#MAXTEMP = 42.0
-#ALERTTEMP = 37.0
-
 MINTEMP = 37.5
 MAXTEMP = 42.0
 ALERTTEMP = 36.5
@@ -44,17 +37,8 @@ def read_temp():
     tempF = (tempC * 9.0 / 5.0) + 32
     return tempF
 
-##with open('./config.json') as config_file:
-##    plotlyuserconf = json.load(config_file)
-##
-##headers = {'Plotly-Client-Platform': 'python'}
-##auth = HTTPBasicAuth(plotlyuserconf['plotly_username'],
-##                     plotlyuserconf['plotly_api_key'])
-#mailsend.send('Starting tmp36.py', 'Starting now..')
-
 readadc.initialize()
 ps = Powerswitch(PSPIN)
-# ldr = Lightsensor(LDRPIN)
 
 rawoutfh = open(RAWOUTFILE, 'a')
 meanoutfh = open(MEANOUTFILE, 'ab', 0)
@@ -63,8 +47,6 @@ cnt = 0
 temps = []
 meantempdata = []
 msgqueue = []
-# failmsgsent = False
-# stuckmsgsent = False
 lastmeantemp = None
 tdir = u"\u2198"
 minsincelastchg = 0
@@ -79,12 +61,9 @@ while True:
     rawoutfh.write('{} {:.2f}\n'.format(curtime, tempF))
 
     if cnt % AVGINTERVAL != 0:
-        # print('secs={:2d} cnt={} temp={:.2f} switch:{} light:{}'\
-        #       .format(60 - cnt % 60, cnt, tempF, ps.is_on, ldr.light))
         print('secs={:2d} cnt={} temp={:.2f} switch:{}'\
               .format(60 - cnt % 60, cnt, tempF, ps.is_on))
     else:
-        # Calculate average and write the data to plotly
         print('Here!')
 
         meantemp = np.median(temps)
@@ -105,8 +84,6 @@ while True:
                 minsincelastchg = 0
 
         lastmeantemp = meantemp
-        # meantemp = np.mean(sorted(temps)[3:-3])
-        #meantempdata.append([curtime, meantemp])
 
         dline = bytes('{} {:.2f} {} ({}) {:.2f}\n'
                       .format(curtime, meantemp,
@@ -123,39 +100,16 @@ while True:
                 msgqueue.append(('*** Heater problem? ***',
                                  'Temp dropped below {}!'.format(ALERTTEMP), False))
                 ps.on()  # Try again
-                ## time.sleep(1.0)  # Give the light time to come on
         elif meantemp < MINTEMP:
             if ps.is_off:
                 msgqueue.append(('Turning on the heater',
                                  'Temp dropped below {}'.format(MINTEMP), False))
                 ps.on()
-                # stuckmsgsent = False  # Reset
-                ## time.sleep(1.0)  # Give the light time to come on
         elif meantemp > MAXTEMP:
             if ps.is_on:
                 msgqueue.append(('Turning off the heater',
                                  'Temp above {}'.format(MAXTEMP), False))
                 ps.off()
-                # failmsgsent = False  # Reset
-                ## time.sleep(4.0)  # Give the light time to dim
-
-        ## # Check to make sure the light is really on when it's supposed to be
-        ## if ps.is_on and ldr.dark:
-        ##     if failmsgsent is False:
-        ##         subj, msg = ('*** Bulb failure? ***',
-        ##                      "The powerswitch is on but it's dark down here!")
-        ##         msgqueue.append((subj, msg, False))  # email
-        ##         msgqueue.append((subj, msg, True))  # text
-        ##     failmsgsent = True
-
-        ## # Check to make sure the light is really off when it's supposed to be
-        ## if ps.is_off and ldr.light:
-        ##     if stuckmsgsent is False:
-        ##         subj, msg = ('*** Switch stuck? ***',
-        ##                      "The powerswitch is off but it's light down here!")
-        ##         msgqueue.append((subj, msg, False))  # email
-        ##         msgqueue.append((subj, msg, True))  # text
-        ##     stuckmsgsent = True
 
         # Send any queued messages
         while len(msgqueue) > 0:
@@ -165,34 +119,9 @@ while True:
             try:
                 mailsend.send(subj, msg, alert=alert)
                 print('Mail sent!')
-                # msgqueue.pop(0)
             except:
                 print('Mail not sent!')
                 pass
-
-        #if cnt % (15 * AVGINTERVAL) == 0:
-        #if cnt % (1 * AVGINTERVAL) == 0:
-        #    rowdata = []
-        #    for ctime, mtemp in meantempdata:
-        #        rowdata.append([ctime, mtemp])
-
-        #    rows = {"rows": rowdata}
-        #    print('rows', rows)
-        #        
-        #    try:
-        #        r = requests.post('https://api.plot.ly/v2/grids/subnivean:21/row',
-        #                           auth=auth, headers=headers, json=rows)
-        #        print('response:', r.__dict__)
-        #        if r.status_code != 429:
-        #            print('Data uploaded (?)')
-        #            meantempdata = []
-        #        else:
-        #            print('Too many requests!')
-
-        #        #meanoutfh.write('{}\n\n'.format(str(r)))
-
-        #    except:
-        #        print('Request failed...')
 
     # delay between readings
     time.sleep(1.0)
