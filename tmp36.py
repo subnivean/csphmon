@@ -17,11 +17,10 @@ ALERTTEMP = 36.5
 # temperature sensor middle pin connected channel 0 of mcp3008
 TMPPIN = 0
 PSPIN = 22  # Powerswitch pin
-LDRPIN = 17  # Light sensor pin
 
 AVGINTERVAL = 60  # Interval for averaging of readings
-MEANOUTFILE = 'meantemps.out'
-RAWOUTFILE = 'rawtemps.out'
+MEANOUTFILE = "meantemps.out"
+RAWOUTFILE = "rawtemps.out"
 
 def read_temp():
     sensor_data = readadc.readadc(TMPPIN,
@@ -40,8 +39,8 @@ def read_temp():
 readadc.initialize()
 ps = Powerswitch(PSPIN)
 
-rawoutfh = open(RAWOUTFILE, 'a')
-meanoutfh = open(MEANOUTFILE, 'ab', 0)
+rawoutfh = open(RAWOUTFILE, "a")
+meanoutfh = open(MEANOUTFILE, "ab", 0)
 
 cnt = 0
 temps = []
@@ -58,13 +57,12 @@ while True:
     temps.append(tempF)
 
     curtime = datetime.datetime.now().isoformat().split('.')[0]
-    rawoutfh.write('{} {:.2f}\n'.format(curtime, tempF))
+    rawoutfh.write(f"{curtime} {tempF:.2f}\n")
 
     if cnt % AVGINTERVAL != 0:
-        print('secs={:2d} cnt={} temp={:.2f} switch:{}'\
-              .format(60 - cnt % 60, cnt, tempF, ps.is_on))
+        print(f"secs={60 - cnt % 60:2d} cnt={cnt} temp={tempF:.2f} switch:{ps.is_on}")
     else:
-        print('Here!')
+        print("Here!")
 
         meantemp = np.median(temps)
 
@@ -85,10 +83,7 @@ while True:
 
         lastmeantemp = meantemp
 
-        dline = bytes('{} {:.2f} {} ({}) {:.2f}\n'
-                      .format(curtime, meantemp,
-                              tdir, minsincelastchg, rmean10),
-                      'UTF-8')
+        dline = bytes(f"{curtime} {meantemp:.2f} {tdir} ({minsincelastchg}) {rmean10:.2f}\n", "UTF-8")
         meanoutfh.write(dline)
 
         minsincelastchg += 1
@@ -97,18 +92,18 @@ while True:
 
         if meantemp < ALERTTEMP:
             if ps.is_on:
-                msgqueue.append(('*** Heater problem? ***',
-                                 'Temp dropped below {}!'.format(ALERTTEMP), False))
+                msgqueue.append(("*** Heater problem? ***",
+                                 f"Temp dropped below {ALERTTEMP}!", False))
                 ps.on()  # Try again
         elif meantemp < MINTEMP:
             if ps.is_off:
-                msgqueue.append(('Turning on the heater',
-                                 'Temp dropped below {}'.format(MINTEMP), False))
+                msgqueue.append(("Turning on the heater",
+                                 f"Temp dropped below {MINTEMP}", False))
                 ps.on()
         elif meantemp > MAXTEMP:
             if ps.is_on:
-                msgqueue.append(('Turning off the heater',
-                                 'Temp above {}'.format(MAXTEMP), False))
+                msgqueue.append(("Turning off the heater",
+                                 f"Temp above {MAXTEMP}", False))
                 ps.off()
 
         # Send any queued messages
@@ -118,9 +113,9 @@ while True:
             msgqueue.pop(0)
             try:
                 mailsend.send(subj, msg, alert=alert)
-                print('Mail sent!')
+                print("Mail sent!")
             except:
-                print('Mail not sent!')
+                print("Mail not sent!")
                 pass
 
     # delay between readings
