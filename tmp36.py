@@ -43,7 +43,6 @@ meanoutfh = open(MEANOUTFILE, "ab", 0)
 
 cnt = 0
 temps = []
-meantempdata = []
 msgqueue = []
 lastmeantemp = None
 tdir = u"\u2198"
