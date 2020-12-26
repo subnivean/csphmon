@@ -20,6 +20,7 @@ PSPIN = 22  # Powerswitch pin
 AVGINTERVAL = 60  # Interval for averaging of readings
 MEANOUTFILE = "meantemps.out"
 RAWOUTFILE = "rawtemps.out"
+MVFUDGEFACTOR = 1.064  # Sensor millivolt adjustment to get correct temp
 
 def read_temp():
     sensor_data = readadc.readadc(TMPPIN,
@@ -28,12 +29,12 @@ def read_temp():
                                   readadc.PINS.SPIMISO,
                                   readadc.PINS.SPICS)
 
-    millivolts = sensor_data * (3300.0 / 1024.0)
+    millivolts = sensor_data * (3300.0 / 1024.0) * MVFUDGEFACTOR
     # 10 mv per degree
-    tempC = ((millivolts - 100.0) / 10.0) - 40.0
+    tempC = (millivolts - 500.0) / 10.
     # convert celsius to fahrenheit
     tempF = (tempC * 9.0 / 5.0) + 32
-    return tempF
+    return tempF, millivolts
 
 readadc.initialize()
 ps = Powerswitch(PSPIN)
@@ -51,14 +52,15 @@ last30 = []
 while True:
     cnt += 1
 
-    tempF = read_temp()
+    tempF, mV = read_temp()
     temps.append(tempF)
 
     curtime = datetime.datetime.now().isoformat().split('.')[0]
     rawoutfh.write(f"{curtime} {tempF:.2f}\n")
 
     if cnt % AVGINTERVAL != 0:
-        print(f"secs={60 - cnt % 60:2d} cnt={cnt} temp={tempF:.2f} switch:{ps.is_on}")
+        print(f"secs={60 - cnt % 60:2d} cnt={cnt} "
+              f"temp={tempF:.2f} switch:{ps.is_on}  mv:{mV:.1f}")
     else:
         print("Here!")
 
