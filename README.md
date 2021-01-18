@@ -8,10 +8,12 @@ Clone into `/home/pi/pythaw`.
 Note that you must copy `secrets_example.py` to `secrets.py` and modify
 with actual data.
 
-Invoked from `rc.local` as follows:
+Invoked from `rc.local` as follows (TMP36 sensor):
 ```
-cd /home/pi/pythaw
-./tmp36.py &
+cd /home/pi/pythaw && ./tmp36.py &
+```
 
-exit 0
+or this (DS18B20 sensor):
+```
+cd /home/pi/pythaw && ./ds18b20.py &
 ```
