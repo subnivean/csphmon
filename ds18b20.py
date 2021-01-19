@@ -21,7 +21,7 @@ MEANOUTFILE = "meantemps.out"
 RAWOUTFILE = "rawtemps.out"
 
 base_dir = '/sys/bus/w1/devices/'
-device_folder = glob.glob(base_dir + '28*')[1]
+device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
 
 def read_temp_raw():
@@ -120,4 +120,4 @@ while True:
                 print("Mail not sent!")
 
     # Set delay to get ~1 second between readings
-    time.sleep(0.10)
+    time.sleep(0.12)
