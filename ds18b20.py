@@ -3,6 +3,7 @@ import glob
 import time
 import datetime
 import numpy as np
+from w1thermsensor import W1ThermSensor
 
 # Current directory
 import mailsend
@@ -12,38 +13,24 @@ from powerswitch import Powerswitch
 MINTEMP = 37.5
 MAXTEMP = 42.0
 ALERTTEMP = 36.5
+THERMOOFFSET = 0.7
+DEGREESF = 'fahrenheit'
 
 # temperature sensor middle pin connected channel 0 of mcp3008
 PSPIN = 22  # Powerswitch pin
 
-AVGINTERVAL = 60  # Interval for averaging of readings
+AVGINTERVAL = 15  # Interval for averaging of readings
 MEANOUTFILE = "meantemps.out"
-RAWOUTFILE = "rawtemps.out"
+# RAWOUTFILE = "rawtemps.out"
 
 base_dir = '/sys/bus/w1/devices/'
 device_folder = glob.glob(base_dir + '28*')[0]
 device_file = device_folder + '/w1_slave'
 
-def read_temp_raw():
-    with open(device_file, 'r') as fh:
-        lines = fh.readlines()
-    return lines
-
-def read_temp():
-    lines = read_temp_raw()
-    while lines[0].strip()[-3:] != 'YES':
-        time.sleep(0.2)
-        lines = read_temp_raw()
-    equals_pos = lines[1].find('t=')
-    if equals_pos != -1:
-        temp_string = lines[1][equals_pos+2:]
-        temp_c = float(temp_string) / 1000.0
-        temp_f = temp_c * 9.0 / 5.0 + 32.0
-        return temp_f
-
 ps = Powerswitch(PSPIN)
+sensor = W1ThermSensor(offset=THERMOOFFSET, offset_unit=DEGREESF)
 
-rawoutfh = open(RAWOUTFILE, "a")
+# rawoutfh = open(RAWOUTFILE, "a")
 meanoutfh = open(MEANOUTFILE, "ab", 0)
 
 cnt = 0
@@ -56,14 +43,14 @@ last30 = []  # Container to hold last 30 minutes
 while True:
     cnt += 1
 
-    tempF = read_temp()
+    tempF = sensor.get_temperature(unit=DEGREESF)
     temps.append(tempF)
 
     curtime = datetime.datetime.now().isoformat().split('.')[0]
-    rawoutfh.write(f"{curtime} {tempF:.2f}\n")
+    # rawoutfh.write(f"{curtime} {tempF:.2f}\n")
 
     if cnt % AVGINTERVAL != 0:
-        print(f"secs={60 - cnt % 60:2d} cnt={cnt} "
+        print(f"secs={AVGINTERVAL - cnt % AVGINTERVAL:2d} cnt={cnt} "
               f"temp={tempF:.2f} switch:{ps.is_on}")
     else:
         print("Here!")
@@ -120,4 +107,4 @@ while True:
                 print("Mail not sent!")
 
     # Set delay to get ~1 second between readings
-    time.sleep(0.12)
+    time.sleep((60 / AVGINTERVAL) - 1 + 0.121)
