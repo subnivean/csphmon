@@ -10,9 +10,9 @@ import mailsend
 from powerswitch import Powerswitch
 
 # All temps in degrees F
-MINTEMP = 37.5
+MINTEMP = 36.0
 MAXTEMP = 42.0
-ALERTTEMP = 36.5
+ALERTTEMP = 35.5
 THERMOOFFSET = 0.7
 DEGREESF = 'fahrenheit'
 
