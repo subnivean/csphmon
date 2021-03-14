@@ -3,7 +3,7 @@ import glob
 import time
 import datetime
 import numpy as np
-from w1thermsensor import W1ThermSensor
+from w1thermsensor import W1ThermSensor, SensorNotReadyError
 
 # Current directory
 import mailsend
@@ -43,7 +43,13 @@ last30 = []  # Container to hold last 30 minutes
 while True:
     cnt += 1
 
-    tempF = sensor.get_temperature(unit=DEGREESF)
+    try:
+        tempF = sensor.get_temperature(unit=DEGREESF)
+    except SensorNotReadyError:
+        print("Waiting for sensor to become ready...")
+        time.sleep(15)
+        continue
+
     temps.append(tempF)
 
     curtime = datetime.datetime.now().isoformat().split('.')[0]
