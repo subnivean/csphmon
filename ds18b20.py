@@ -11,7 +11,7 @@ from powerswitch import Powerswitch
 
 # All temps in degrees F
 MINTEMP = 36.0
-MAXTEMP = 42.0
+MAXTEMP = 39.0
 ALERTTEMP = 35.5
 THERMOOFFSET = 0.7
 DEGREESF = 'fahrenheit'
